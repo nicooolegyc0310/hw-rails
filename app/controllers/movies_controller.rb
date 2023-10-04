@@ -7,14 +7,20 @@ class MoviesController < ApplicationController
   end
 
   def index
+    @all_ratings = Movie.all_ratings
     if params[:ratings].nil?
-      @movies = Movie.all
-      @ratings_to_show = []
+      @movies = Movie.all.order(params[:sort_by])
+      @ratings_to_show = @all_ratings.each_with_object({}) { |i, hash| hash[i] = "1" }
     else
-      @movies = Movie.with_ratings(params[:ratings].keys) # retrieve the key of movie's rating from URI route
+      @movies = Movie.with_ratings(params[:ratings].keys).order(params[:sort_by]) # retrieve the key of movie's rating from URI route
       @ratings_to_show = params[:ratings]
     end
-    @all_ratings = Movie.all_ratings
+    if params[:sort_by] == 'title'
+      @sort_title = 'bg-warning hilite'
+    end
+    if params[:sort_by] == 'release_date'
+      @sort_date = 'bg-warning hilite'
+    end
   end
 
   def new
