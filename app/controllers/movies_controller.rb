@@ -7,7 +7,14 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    if params[:ratings].nil?
+      @movies = Movie.all
+      @ratings_to_show = []
+    else
+      @movies = Movie.with_ratings(params[:ratings].keys) # retrieve the key of movie's rating from URI route
+      @ratings_to_show = params[:ratings]
+    end
+    @all_ratings = Movie.all_ratings
   end
 
   def new
