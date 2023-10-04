@@ -8,19 +8,37 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
-    if params[:ratings].nil?
-      @movies = Movie.all.order(params[:sort_by])
-      @ratings_to_show = @all_ratings.each_with_object({}) { |i, hash| hash[i] = "1" }
+
+    if params[:sort_by]
+      @order_criteria = params[:sort_by]
+    elsif session[:sort_by]
+      @order_criteria = session[:sort_by]
     else
-      @movies = Movie.with_ratings(params[:ratings].keys).order(params[:sort_by]) # retrieve the key of movie's rating from URI route
-      @ratings_to_show = params[:ratings]
+      @order_criteria = 'title'
     end
-    if params[:sort_by] == 'title'
+
+    if !params[:ratings].nil?
+      @movies = Movie.with_ratings(params[:ratings].keys).order(@order_criteria) 
+      @ratings_to_show = params[:ratings]
+    elsif !session[:ratings].nil?
+      @movies = Movie.with_ratings(session[:ratings].keys).order(@order_criteria) 
+      @ratings_to_show = session[:ratings]
+    else
+      @movies = Movie.all.order(@order_criteria)
+      @ratings_to_show = @all_ratings.each_with_object({}) { |i, hash| hash[i] = "1" }
+    end
+
+    session[:ratings] = @ratings_to_show
+    session[:sort_by] = @order_criteria
+
+    if @order_criteria == 'title'
       @sort_title = 'bg-warning hilite'
     end
-    if params[:sort_by] == 'release_date'
+                               
+    if @order_criteria == 'release_date'
       @sort_date = 'bg-warning hilite'
     end
+
   end
 
   def new
