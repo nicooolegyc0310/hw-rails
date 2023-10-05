@@ -17,16 +17,16 @@ class MoviesController < ApplicationController
       @order_criteria = 'title'
     end
 
-    if !params[:ratings].nil?
-      @movies = Movie.with_ratings(params[:ratings].keys).order(@order_criteria) 
+    if params[:ratings]
       @ratings_to_show = params[:ratings]
-    elsif !session[:ratings].nil?
-      @movies = Movie.with_ratings(session[:ratings].keys).order(@order_criteria) 
+    elsif session[:ratings]
       @ratings_to_show = session[:ratings]
+      redirect_to movies_path(ratings: session[:ratings], sort_by: @order_criteria) and return
     else
-      @movies = Movie.all.order(@order_criteria)
       @ratings_to_show = @all_ratings.each_with_object({}) { |i, hash| hash[i] = "1" }
     end
+
+    @movies = Movie.with_ratings(@ratings_to_show.keys).order(@order_criteria)
 
     session[:ratings] = @ratings_to_show
     session[:sort_by] = @order_criteria
